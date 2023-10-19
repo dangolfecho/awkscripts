@@ -81,7 +81,7 @@ BEGIN {
 				nesting_index++
 			}
 			else if(current_char == "\""){
-				length_of_str = ind - start_index + 1
+				length_of_str = ind - start_index
 				obtained_str = substr(current_line, start_index, length_of_str)
 				value[value_index] = obtained_str
 				start_index = ind + 1
@@ -143,7 +143,7 @@ END {
 				flag = 1
 			}
 			else{
-				out_line = out_line "\"" items[items_iter] "\"" ": " value[items_iter] "\"" ","
+				out_line = out_line "\"" items[items_iter] "\"" ": "  "\"" value[items_iter] "\"" ","
 			}
 		}
 		else{
