@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-awk -f script.awk input.xml
+awk -f xTj.awk sample.xml
