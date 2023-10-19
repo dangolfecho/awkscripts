@@ -1,7 +1,7 @@
 BEGIN {
-	LINT = 1
+	#LINT = 1
 	out = "result.json"
-	depth = -1
+	depth = 0 
 	items_index = 0
 	nesting_index = 0
 	value_index = 0
@@ -17,6 +17,12 @@ BEGIN {
 	for(ind=1;ind<=length(current_line);ind++){
 		current_char = substr(current_line, ind, 1)
 		if(mode == 0){
+			if(substr(current_line, ind, 2) == "</"){
+				print "HI"
+				mode = 4
+				start_index = ind + 1
+				depth--;
+			}
 			if(current_char == "<"){
 				mode = 1
 				start_index = ind + 1
@@ -40,7 +46,7 @@ BEGIN {
 				else{
 					multiple[obtained_str] = 1
 				}
-				start_index = current_char + 1
+				start_index = ind + 1
 			}
 			else if(current_char == ">"){
 				mode = 0
@@ -68,7 +74,7 @@ BEGIN {
 			if(current_char == "="){
 				length_of_str = ind-start_index
 				obtained_str = substr(current_line, start_index, length_of_str)
-				start_index = current_char + 2
+				start_index = ind + 2
 				ind++
 				items[items_index] = obtained_str
 				value_index = items_index
@@ -80,7 +86,7 @@ BEGIN {
 				length_of_str = ind - start_index + 1
 				obtained_str = substr(current_line, start_index, length_of_str)
 				value[value_index] = obtained_str
-				start_index = current_char + 1
+				start_index = ind + 1
 			}
 			else if(current_char == ">"){
 				if(ind != length(current_line)){
@@ -111,10 +117,36 @@ END {
 	#multiple
 	#exists
 	cur_depth = 0
-	print "{" > out
+	print "{"
+	#print "{" > out
 	out_line = ""
-	for(items_iter = 0; items_iter < items_ind; items_iter++){
-
+	flag = 0
+	for(items_iter = 0; items_iter < items_index; items_iter++){
+		out_line = ""
+		flag = 0
+		depth_info = nesting[items_iter]
+		for(d=0;d<depth_info;d++){
+			out_line = out_line "\t"
+		}
+		if(value[items_iter] != ""){
+			if(nesting[items_iter++] < nesting[items_iter]){
+				out_line = out_line items[items_iter] ": " value[items_iter]
+				flag = 1
+			}
+			else{
+				out_line = out_line items[items_iter] ": " value[items_iter] ","
+			}
+		}
+		else{
+			if(multiple[items[items_iter]] == 1){
+				out_line = out_line items[items_iter] ": [{"
+			}
+			else{
+				out_line = out_line items[items_iter] ": {"
+			}
+		}
+		print out_line
 	}
-	print "}" > out
+	print "}"
+	#print "}" > out
 }
