@@ -1,9 +1,9 @@
 #!/usr/bin/bash
 
-#awk -f xTj.awk sample.xml
+echo "XML TO JSON CONVERSION"
+
+awk -f xTj.awk sample.xml
+
+#echo "JSON TO XML CONVERSION"
 
 #awk -f jTx.awk sample.json
-
-awk -f jTx.awk output.txt
-
-
