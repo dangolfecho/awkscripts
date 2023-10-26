@@ -1,5 +1,5 @@
 BEGIN{
-	save_index = 0
+	save_index = -1
 	depth = 0
 }
 
@@ -9,9 +9,8 @@ BEGIN{
 	brack_count = 0
 	str_count = 0
 	flag = 0
-	for(ptr=1;ptr<length(cur_line);ptr++){
+	for(ptr=1;ptr<=length(cur_line);ptr++){
 		cur_char = substr(cur_line, ptr, 1)
-		print cur_char
 		if(cur_char == "{"){
 			brack_count++;
 		}
@@ -33,14 +32,16 @@ BEGIN{
 		}
 	}
 	if(flag){
-		depth--
-		result = ""
-		for(i=0;i<depth;i++){
-			result = result "\t"
+		if(save_index != -1){
+			depth--
+			result = ""
+			for(i=0;i<depth;i++){
+				result = result "\t"
+			}
+			result = result "</" save[save_index] ">"
+			save_index--
+			print result
 		}
-		result = result "</" save[save_index] ">"
-		save_index--
-		print result
 	}
 	else{
 		if(brack_count > 0){
