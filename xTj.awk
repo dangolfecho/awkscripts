@@ -1,6 +1,6 @@
 BEGIN {
 	#LINT = 1
-	depth = 0 
+	depth = 0
 	items_index = 0
 	nesting_index = 0
 	value_index = 0
@@ -8,113 +8,48 @@ BEGIN {
 	#neg
 	#multiple
 	#exists
+	mode = 0
 }
 
 {
-	#mode = 0
-	start_index = 0
-	current_line = $0
-	for(ind=1;ind<=length(current_line);ind++){
-		current_char = substr(current_line, ind, 1)
-		if(mode == 0){
-			if(substr(current_line, ind, 2) == "</"){
-				mode = 4
-				start_index = ind + 2 
-				depth--;
-			}
-			else if(current_char == "<"){
-				mode = 1
-				start_index = ind + 1
-				depth++;
-			}
-		}
-		else if(mode == 1){
-			if(current_char == " "){
-				mode = 2
-				length_of_str = ind - start_index
-				obtained_str = substr(current_line, start_index, length_of_str)
-				items[items_index] = obtained_str
-				save_value_index = items_index
-				items_index++
-				nesting[nesting_index] = depth
-				nesting_index++
-				if(exists[obtained_str] == ""){
-					exists[obtained_str] = 1
-				}
-				else{
-					multiple[obtained_str] = 1
-				}
-				start_index = ind + 1
+	cur_line = $0
+	ptr = 0
+	for(ptr=1;ptr<=length(cur_line);ptr++){
+		cur_char = substr(cur_line, ptr, 1)
+		cur_char2 = substr(cur_line, ptr, 2)
+		if(cur_char2 != "</"){
+			if(cur_char == "<"){
 				depth++
-			}
-			else if(current_char == ">"){
-				mode = 0
-				length_of_str = ind - start_index
-				obtained_str = substr(current_line, start_index, length_of_str)
-				items[items_index] = obtained_str
-				save_value_index = items_index
-				items_index++
-				if(ind != length(current_line)){
-					mode = 3
-					start_index = ind + 1
+				inner_ptr = ptr+1
+				for(inner_ptr = ptr+1;inner_ptr<=length(cur_line);inner_ptr++){
+					cur_char3 = substr(cur_line, inner_ptr, 1)
+					if(cur_char3 == ">"){
+						ob_string = substr(cur_line, ptr+1, inner_ptr-ptr-1)
+						items[items_index] = ob_string
+						items_index++
+						exists_index = ob_string "," depth
+						if(exists[exists_index] == 1){
+							multiple[exists_index] = 1
+						}
+						exists[exists_index] = 1
+					}
+					else if(cur_char3 == " "){
+						ob_string = substr(cur_line, ptr+1, inner_ptr-ptr-1)
+						items[items_index] = ob_string
+						items_index++
+						exists_index = ob_string "," depth
+						if(exists[exists_index] == 1){
+							multiple[exists_index] = 1
+						}
+						exists[exists_index] = 1
+						depth++
+						inner_ptr2 = inner_ptr+1
+					}
 				}
-				nesting[nesting_index] = depth
-				nesting_index++
-				if(exists[obtained_str] == ""){
-					exists[obtained_str] = 1
-				}
-				else{
-					multiple[obtained_str] = 1
-				}
+				ptr = inner_ptr
 			}
 		}
-		else if(mode == 2){
-			if(current_char == "="){
-				length_of_str = ind-start_index
-				obtained_str = substr(current_line, start_index, length_of_str)
-				start_index = ind + 2
-				ind++
-				items[items_index] = obtained_str
-				value_index = items_index
-				items_index++
-				nesting[nesting_index] = depth
-				nesting_index++
-			}
-			else if(current_char == "\""){
-				length_of_str = ind - start_index
-				obtained_str = substr(current_line, start_index, length_of_str)
-				value[value_index] = obtained_str
-				start_index = ind + 1
-			}
-			else if(current_char == ">"){
-				if(ind != length(current_line)){
-					mode = 3
-					value_index = items_index
-					start_index = ind + 1
-				}
-			}
-		}
-		else if(mode == 3){
-			if(current_char == "<"){
-				length_of_str = ind - start_index
-				obtained_str = substr(current_line, start_index, length_of_str)
-				value[save_value_index] = obtained_str
-			}
-			else if(current_char == "/"){
-				depth--;
-				mode = 0
-			}
-		}
-		else if(mode == 4){
-			if(current_char == ">"){
-				mode = 0
-				length_of_str = ind - start_index
-				obtained_str = substr(current_line, start_index, length_of_str)
-				items[items_index] = obtained_str
-				items_index++
-				nesting[nesting_index] = depth
-				nesting_index++
-			}
+		else{
 		}
 	}
 }
@@ -159,23 +94,27 @@ END {
 	print "}"
 	#print "}" > out
 	out = "debug.txt"
-	print " " > out
+	print "\n" > out
 	print "items" > out
 	for(i in items){
 		print i " " items[i] >> out
 	}
+	print "\n" > out
 	print "nesting" > out
 	for(i in nesting){
 		print i " " nesting[i] >> out
 	}
+	print "\n" > out
 	print "value" > out
 	for(i in value){
 		print i " " value[i] >> out
 	}
+	print "\n" > out
 	print "multiple" > out
 	for(i in multiple){
 		print i " " multiple[i] >> out
 	}
+	print "\n" > out
 	print "exists" > out
 	for(i in exists){
 		print i " " exists[i] >> out
