@@ -1,6 +1,5 @@
 BEGIN {
 	#LINT = 1
-	out = "result.json"
 	depth = 0 
 	items_index = 0
 	nesting_index = 0
@@ -46,6 +45,7 @@ BEGIN {
 					multiple[obtained_str] = 1
 				}
 				start_index = ind + 1
+				depth++
 			}
 			else if(current_char == ">"){
 				mode = 0
@@ -159,7 +159,7 @@ END {
 	print "}"
 	#print "}" > out
 	out = "debug.txt"
-	print > out
+	print " " > out
 	print "items" > out
 	for(i in items){
 		print i " " items[i] >> out
