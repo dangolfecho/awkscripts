@@ -65,6 +65,9 @@ BEGIN {
 							ob_string = substr(cur_line, ptr+1, inner_ptr-ptr-1)
 							items[items_index] = ob_string
 							nesting[items_index] = depth
+							if(items[items_index-1] == ob_string){
+								multiple[ob_string] = 1
+							}
 							items_index++
 							exists_index = ob_string "," depth
 							if(exists[exists_index] == 1){
@@ -85,6 +88,9 @@ BEGIN {
 						ob_string = substr(cur_line, ptr+1, inner_ptr-ptr-1)
 						items[items_index] = ob_string
 						nesting[items_index] = depth
+						if(items[items_index-1] == ob_string){
+							multiple[ob_string] = 1
+						}
 						items_index++
 						exists_index = ob_string "," depth
 						if(exists[exists_index] == 1){
@@ -160,6 +166,7 @@ END {
 	#print "{" > out
 	out_line = ""
 	flag = 0
+	mul_flag = 0
 	for(items_iter = 0; items_iter < items_index; items_iter++){
 		out_line = ""
 		flag = 0
@@ -168,22 +175,47 @@ END {
 			out_line = out_line "\t"
 		}
 		if(value[items_iter] != ""){
-			if(nesting[items_iter+1] < nesting[items_iter]){
-				out_line = out_line "\"" items[items_iter] "\"" ": " "\"" value[items_iter] "\""
-				flag = 1
+			if(nesting[items_iter+2] < nesting[items_iter]){
+				out_line = out_line "\"" items[items_iter] "\"" ": "  "\"" value[items_iter] "\""
 			}
 			else{
 				out_line = out_line "\"" items[items_iter] "\"" ": "  "\"" value[items_iter] "\"" ","
+				items_iter++
 			}
 		}
 		else{
-			if(multiple[items[items_iter]] == 1){
-				out_line = out_line "\"" items[items_iter] "\"" ": [{"
+			if(neg[items_iter] == 1){
+				if(mul_flag==1 && items[items_iter+1] == mul_item && items[items_iter] == mul_item){
+					out_line = out_line "},"
+				}
+				else if(mul_flag == 1 && items[items_iter+1] != mul_item && items[items_iter] == mul_item){
+					out_line = out_line "}]"
+					mul_flag = 0
+				}
+				else if(nesting[items_iter+1] < nesting[items_iter] && mul_flag == 0){
+					out_line = out_line "}"
+				}
+			}
+			else if(nesting[items_iter+1] < nesting[items_iter]){
+				print "HERE"
+				out_line = out_line "}"
 			}
 			else{
-				cur_depth = nesting[items_iter]
-				next_depth = nesting[items_iter]
-				out_line = out_line "\"" items[items_iter] "\"" ": {"
+				if(multiple[items[items_iter]] == 1 && mul_flag == 0){
+					out_line = out_line "\"" items[items_iter] "\": [{"
+					mul_flag = 1
+					mul_item = items[items_iter]
+				}
+				else{
+					if(items[items_iter] == mul_item){
+						out_line = out_line "{"
+					}
+					else{
+						cur_depth = nesting[items_iter]
+						next_depth = nesting[items_iter]
+						out_line = out_line "\"" items[items_iter] "\"" ": {"
+					}
+				}
 			}
 		}
 		print out_line
