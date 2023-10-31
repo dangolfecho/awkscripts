@@ -1,5 +1,4 @@
 BEGIN {
-	#LINT = 1
 	depth = 0
 	items_index = 0
 	save_value_index = 0
